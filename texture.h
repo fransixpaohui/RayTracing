@@ -78,17 +78,20 @@ public:
 
 		return color(color_scale * pixel[0], color_scale * pixel[1], color_scale * pixel[2]);
 	}
+
 private:
 	rtw_image image;
 };
 
-class noise_texture : public texture {
+class noise_texture : public texture
+{
 
 public:
 	noise_texture() {}
 
-	color value(double u, double v, const point3& p)const override {
-		return  color(1, 1, 1) * noise.noise(p);
+	color value(double u, double v, const point3 &p) const override
+	{
+		return color(1, 1, 1) * noise.noise(p);
 	}
 
 private:

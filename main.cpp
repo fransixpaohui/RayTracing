@@ -13,10 +13,10 @@ void bounsing_shperes()
 	hittable_list world;
 
 	auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
-	world.add(make_shared<sphere>(point3(0,-1000,0),1000,make_shared<lambertian>(checker)));
+	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
 
-	//auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-	//world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
+	// auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+	// world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
 
 	for (int a = -11; a < 11; a++)
 	{
@@ -72,6 +72,7 @@ void bounsing_shperes()
 	cam.image_width = 200;
 	cam.samples_per_pixel = 50;
 	cam.max_depth = 10;
+	cam.background = color(0.70, 0.80, 1.00);
 
 	cam.vfov = 20;
 	cam.lookfrom = point3(13, 2, 3);
@@ -84,7 +85,8 @@ void bounsing_shperes()
 	cam.render(world);
 }
 
-void checkered_spheres() {
+void checkered_spheres()
+{
 
 	hittable_list world;
 
@@ -99,6 +101,7 @@ void checkered_spheres() {
 	cam.image_width = 400;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 50;
+	cam.background = color(0.70, 0.80, 1.00);
 
 	cam.vfov = 20;
 	cam.lookfrom = point3(13, 2, 3);
@@ -110,7 +113,8 @@ void checkered_spheres() {
 	cam.render(world);
 }
 
-void earth() {
+void earth()
+{
 	auto earth_texture = make_shared<image_texture>("earthmap.jpg"); // 将图片变成纹理类
 	auto earth_surface = make_shared<lambertian>(earth_texture);
 	auto globe = make_shared<sphere>(point3(0, 0, 0), 2, earth_surface); // stationary sphere
@@ -121,6 +125,7 @@ void earth() {
 	cam.image_width = 800;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 50;
+	cam.background = color(0.70, 0.80, 1.00);
 
 	cam.vfov = 20;
 	cam.lookfrom = point3(0, 0, 12);
@@ -132,7 +137,8 @@ void earth() {
 	cam.render(hittable_list(globe));
 }
 
-void perlin_spheres() {
+void perlin_spheres()
+{
 	hittable_list world;
 
 	auto pertext = make_shared<noise_texture>();
@@ -145,6 +151,7 @@ void perlin_spheres() {
 	cam.image_width = 400;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 50;
+	cam.background = color(0.70, 0.80, 1.00);
 
 	cam.vfov = 20;
 	cam.lookfrom = point3(13, 2, 3);
@@ -156,7 +163,8 @@ void perlin_spheres() {
 	cam.render(world);
 }
 
-void quads() {
+void quads()
+{
 	hittable_list world;
 
 	// Materials
@@ -179,6 +187,7 @@ void quads() {
 	cam.image_width = 400;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 50;
+	cam.background = color(0.70, 0.80, 1.00);
 
 	cam.vfov = 80;
 	cam.lookfrom = point3(0, 0, 9);
@@ -190,23 +199,96 @@ void quads() {
 	cam.render(world);
 }
 
-int main() {
+void simple_light() {
+	hittable_list world;
+
+	/*auto pertext = make_shared<noise_texture>(4);
+	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+	world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));*/
+
+	auto difflight = make_shared<diffuse_light>(color(4, 4, 4));
+	world.add(make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0), difflight));
+
+
+	camera cam;
+
+	cam.aspect_ratio = 16.0 / 9.0;
+	cam.image_width = 400;
+	cam.samples_per_pixel = 100;
+	cam.max_depth = 50;
+	cam.background = color(0, 0, 0);
+
+	cam.vfov = 20;
+	cam.lookfrom = point3(26, 3, 6);
+	cam.lookat = point3(0, 2, 0);
+	cam.vup = vec3(0, 1, 0);
+
+	cam.defocus_angle = 0;
+
+	cam.render(world);
+}
+
+void cornell_box() {
+	hittable_list world;
+
+	auto red = make_shared<lambertian>(color(.65, .05, .05));
+	auto white = make_shared<lambertian>(color(.73, .73, .73));
+	auto green = make_shared<lambertian>(color(.12, .45, .15));
+	auto light = make_shared<diffuse_light>(color(15, 15, 15));
+
+	world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
+	world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));
+	world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -130), light));
+	world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), white));
+	world.add(make_shared<quad>(point3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
+	world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
+
+	camera cam;
+
+	cam.aspect_ratio = 1.0;
+	cam.image_width = 600;
+	cam.samples_per_pixel = 200;
+	cam.max_depth = 50;
+	cam.background = color(0, 0, 0);
+
+	cam.vfov = 40;
+	cam.lookfrom = point3(278, 278, -800);
+	cam.lookat = point3(278, 278, 0);
+	cam.vup = vec3(0, 1, 0);
+
+	cam.defocus_angle = 0;
+
+	cam.render(world);
+}
+int main()
+{
 	clock_t start, end;
 	start = clock();
 
-	switch (5) {
-	case 1:bounsing_shperes();
+	switch (7)
+	{
+	case 1:
+		bounsing_shperes();
 		break;
-	case 2:checkered_spheres();
+	case 2:
+		checkered_spheres();
 		break;
-	case 3:earth();
+	case 3:
+		earth();
 		break;
-	case 4: perlin_spheres();
+	case 4:
+		perlin_spheres();
 		break;
-	case 5: quads();
+	case 5:
+		quads();
 		break;
-	}
+	case 6:
+		simple_light();
+		break;
+	case 7:
+		cornell_box();
 
+	}
 
 	end = clock();
 	int time = (end - start) / CLOCKS_PER_SEC;
@@ -215,5 +297,5 @@ int main() {
 	int min = time / 60;
 	time = time % 60;
 	std::cout << "\n"
-		<< h << "小时 " << min << "分钟 " << time << "秒";
+			  << h << "小时 " << min << "分钟 " << time << "秒";
 }

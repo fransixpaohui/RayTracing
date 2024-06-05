@@ -21,14 +21,14 @@ private:
 
 public:
 	// Stationary Sphere
-	sphere(const point3& center, const double& radius, std::shared_ptr<material> mat) : center1(center), radius(fmax(0, radius)), mat(mat), is_moving(false)
+	sphere(const point3 &center, const double &radius, std::shared_ptr<material> mat) : center1(center), radius(fmax(0, radius)), mat(mat), is_moving(false)
 	{
 		auto rvec = vec3(radius, radius, radius);
 		bbox = aabb(center1 - rvec, center1 + rvec);
 	}
 
 	// Moving Sphere
-	sphere(const point3& center1, const point3& center2, double radius, std::shared_ptr<material> mat) : center1(center1), radius(fmax(0, radius)), mat(mat), is_moving(true)
+	sphere(const point3 &center1, const point3 &center2, double radius, std::shared_ptr<material> mat) : center1(center1), radius(fmax(0, radius)), mat(mat), is_moving(true)
 	{
 		center_vec = center2 - center1;
 
@@ -39,7 +39,7 @@ public:
 	}
 
 	// 判断光线与物体是否相交
-	bool hit(const ray& r, interval ray_t, hit_record& rec) const override
+	bool hit(const ray &r, interval ray_t, hit_record &rec) const override
 	{
 		// determin the center
 		point3 center = is_moving ? sphere_center(r.time()) : center1;
@@ -64,7 +64,7 @@ public:
 		}
 
 		// 设置相交的hit_record的值
-		rec.t = root;        // the t value of intersection point
+		rec.t = root;		 // the t value of intersection point
 		rec.p = r.at(rec.t); // intersection point
 		vec3 outward_normal = (rec.p - center) / radius;
 		rec.set_face_normal(r, outward_normal);
@@ -79,7 +79,8 @@ public:
 	aabb bounding_box() const override { return bbox; }
 
 	// (x,y,z) -> (u,v)
-	static void get_sphere_uv(const point3& p, double& u, double& v) {
+	static void get_sphere_uv(const point3 &p, double &u, double &v)
+	{
 		auto theta = acos(-p.y());
 		auto phi = atan2(-p.z(), p.x()) + pi;
 

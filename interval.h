@@ -14,7 +14,7 @@ public:
 	interval(double min, double max) : min(min), max(max) {}
 
 	// 两个区间的并集
-	interval(const interval& a, const interval& b)
+	interval(const interval &a, const interval &b)
 	{
 		min = a.min <= b.min ? a.min : b.min;
 		max = a.max >= b.max ? a.max : b.max;
@@ -32,7 +32,7 @@ public:
 
 	bool surrounds(double x) const
 	{
-		return min < x&& x < max;
+		return min < x && x < max;
 	}
 
 	double clamp(double x) const

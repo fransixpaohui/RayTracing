@@ -81,7 +81,6 @@ public:
 	int width() const { return (fdata == nullptr) ? 0 : image_width; }
 	int height() const { return (fdata == nullptr) ? 0 : image_height; }
 
-
 	const unsigned char *pixel_data(int x, int y) const
 	{
 		// return the address of the three RGB bytes of the pixel at x,y
@@ -96,7 +95,7 @@ public:
 	}
 
 private:
-	const int bytes_per_pixel = 3; // r、g、b 各占以一个字节，因此三个通道
+	const int bytes_per_pixel = 3;	// r、g、b 各占以一个字节，因此三个通道
 	float *fdata = nullptr;			// 将图像数据以浮点数形式存储在fdata变量中
 	unsigned char *bdata = nullptr; // linear 8-bit pixel data
 	int image_width = 0;			// loaded image width

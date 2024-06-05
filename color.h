@@ -16,7 +16,7 @@ inline double linear_to_gamma(double linear_component)
 }
 
 // print the color value of the specific pixel
-void write_color(std::vector<std::vector<color>>& colorbuffer, int i, int j, const color& pixel_color)
+void write_color(std::vector<std::vector<color>> &colorbuffer, int i, int j, const color &pixel_color)
 {
 	auto r = pixel_color.x();
 	auto g = pixel_color.y();

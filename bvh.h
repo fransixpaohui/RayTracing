@@ -36,7 +36,7 @@ public:
 	bvh_node(hittable_list list) : bvh_node(list.objects, 0, list.objects.size()) {}
 
 	// recursively initialization
-	bvh_node(vector<shared_ptr<hittable>>& objects, size_t st, size_t end)
+	bvh_node(vector<shared_ptr<hittable>> &objects, size_t st, size_t end)
 	{
 		// build the bounding box of the span of objects
 		bbox = aabb::empty;
@@ -46,9 +46,9 @@ public:
 		}
 
 		int axis = bbox.longest_axis();
-		auto comparator = (axis == 0) ? box_x_compare
-			: (axis == 1) ? box_y_compare
-			: box_z_compare;
+		auto comparator = (axis == 0)	? box_x_compare
+						  : (axis == 1) ? box_y_compare
+										: box_z_compare;
 
 		size_t object_span = end - st;
 
@@ -69,7 +69,7 @@ public:
 		}
 	}
 
-	bool hit(const ray& r, interval ray_t, hit_record& rec) const override
+	bool hit(const ray &r, interval ray_t, hit_record &rec) const override
 	{
 		if (!bbox.hit(r, ray_t))
 			return false;

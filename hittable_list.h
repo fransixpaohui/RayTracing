@@ -12,7 +12,7 @@ private:
 public:
 	std::vector<std::shared_ptr<hittable>> objects;
 
-	hittable_list() {};
+	hittable_list(){};
 
 	hittable_list(std::shared_ptr<hittable> object) { add(object); }
 
@@ -26,13 +26,13 @@ public:
 	void clear() { objects.clear(); }
 
 	// 遍历所有hittable，判断是否有与ray相交的，并更新相应的hit_record
-	bool hit(const ray& r, interval ray_t, hit_record& rec) const override
+	bool hit(const ray &r, interval ray_t, hit_record &rec) const override
 	{
 		hit_record temp_rec;
 		bool hit_anything = false;
 		auto closet_so_far = ray_t.max;
 
-		for (const auto& object : objects)
+		for (const auto &object : objects)
 		{
 			if (object->hit(r, interval(ray_t.min, closet_so_far), temp_rec))
 			{
