@@ -12,15 +12,15 @@
 class camera
 {
 private:
-	int image_height;           // Rendered image height
-	point3 center;              // Camera center
-	point3 pixel00_loc;         // Location of pixel 0, 0
-	vec3 pixel_delta_u;         // Offset to pixel to the right
-	vec3 pixel_delta_v;         // Offset to pixel below
+	int image_height;			// Rendered image height
+	point3 center;				// Camera center
+	point3 pixel00_loc;			// Location of pixel 0, 0
+	vec3 pixel_delta_u;			// Offset to pixel to the right
+	vec3 pixel_delta_v;			// Offset to pixel below
 	double pixel_samples_scale; // color scale factor of pixel samples
-	vec3 u, v, w;               // Camera frame basis vectors
-	vec3 defocus_disk_u;        // Defocus disk horizontal radius
-	vec3 defocus_disk_v;        // Defocus disk vertical radius
+	vec3 u, v, w;				// Camera frame basis vectors
+	vec3 defocus_disk_u;		// Defocus disk horizontal radius
+	vec3 defocus_disk_v;		// Defocus disk vertical radius
 
 	void initialize()
 	{
@@ -62,36 +62,39 @@ private:
 	}
 
 public:
-	double aspect_ratio = 1.0;  // ratio of image width over height
-	int image_width = 100;      // rendered image width in pixel count
+	double aspect_ratio = 1.0;	// ratio of image width over height
+	int image_width = 100;		// rendered image width in pixel count
 	int samples_per_pixel = 10; // count of random samples for each pixel
-	int max_depth = 10;         // Maximum number of ray bounce int the scene
+	int max_depth = 10;			// Maximum number of ray bounce int the scene
+	color background;			// Scene background color
 
-	double vfov = 90;                  // vertial view angle (field of view)
+	double vfov = 90;				   // vertial view angle (field of view)
 	point3 lookfrom = point3(0, 0, 0); // Point camera is looking from
 	point3 lookat = point3(0, 0, -1);  // Point camera is looking at
-	vec3 vup = vec3(0, 1, 0);          // Camera-relative "up" direction
+	vec3 vup = vec3(0, 1, 0);		   // Camera-relative "up" direction
 
 	double defocus_angle = 0; // variation angle of rays through each pixel
-	double focus_dist = 10;   // distance from camera lookfrom point to plane of perfect focus
+	double focus_dist = 10;	  // distance from camera lookfrom point to plane of perfect focus
 
-	void render(const hittable& world)
+	void render(const hittable &world)
 	{
 		initialize();
 
 		// 建立一个图像数组
 		std::vector<std::vector<color>> colorbuffer(image_height);
-		for (int i = 0; i < image_height; i++) {
+		for (int i = 0; i < image_height; i++)
+		{
 			colorbuffer[i].resize(image_width);
 		}
 
 		int scan = 0;
 
-		//omp_set_num_threads(30); // 开启线程数
-		//#pragma omp parallel for
+		omp_set_num_threads(50); // 开启线程数
+		#pragma omp parallel for 
 		for (int j = 0; j < image_height; j++)
 		{
 			std::clog << "\rScanlines remaining: " << (image_height - scan) << ' ' << std::flush;
+			#pragma omp parallel for
 			for (int i = 0; i < image_width; i++)
 			{
 				color pixel_color(0, 0, 0);
@@ -111,10 +114,12 @@ public:
 		OutImage.open("Image.ppm");
 
 		OutImage << "P3\n"
-			<< image_width << ' ' << image_height << "\n255\n";
+				 << image_width << ' ' << image_height << "\n255\n";
 
-		for (int j = 0; j < image_height; j++) {
-			for (int i = 0; i < image_width; i++) {
+		for (int j = 0; j < image_height; j++)
+		{
+			for (int i = 0; i < image_width; i++)
+			{
 				OutImage << colorbuffer[j][i][0] << ' ' << colorbuffer[j][i][1] << ' ' << colorbuffer[j][i][2] << '\n';
 			}
 		}
@@ -147,35 +152,27 @@ public:
 		return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
 	}
 
-	// diffuse reflection adopting recursively call the ray_color（）
-	color ray_color(const ray& r, int depth, const hittable& world)
+	color ray_color(const ray &r, int depth, const hittable &world)
 	{
+		// if we've exceeded the ray bounce limit, no more light is gathered.
 		if (depth <= 0)
-			//return color(1, 1, 1);
 			return color(0, 0, 0);
 
 		// 建立 hit record
 		hit_record rec;
 
-		if (world.hit(r, interval(0.001, infinity), rec))
-		{
-			ray scatterd;
-			color attenuation;
-			// 该材质是否发生scatter
-			if (rec.mat->scatter(r, rec, attenuation, scatterd))
-			{
-				// 两个color向量相乘，结果仍是color
-				// ? ray_color()的返回值可能为零
-				return attenuation * ray_color(scatterd, depth - 1, world);
-			}
-			// return color(1, 1, 1);
-			return color(0, 0, 0);
-		}
+		// if the ray hits noting return teh background color
+		if (!world.hit(r, interval(0.001, infinity), rec)) return background;
 
-		// 没有hit
-		vec3 unit_direction = unit_vector(r.direction());
-		auto a = 0.5 * (unit_direction.y() + 1.0);
-		return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+		ray scatterd;
+		color attenuation;
+		color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p); // if the lights
+
+		if (!rec.mat->scatter(r, rec, attenuation, scatterd)) return color_from_emission;
+
+		color color_from_scatter = attenuation * ray_color(scatterd, depth - 1, world);
+
+		return color_from_emission + color_from_scatter;
 	}
 };
 
