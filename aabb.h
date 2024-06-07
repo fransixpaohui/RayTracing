@@ -110,4 +110,12 @@ private:
 const aabb aabb::empty = aabb(interval::empty, interval::empty, interval::empty);
 const aabb aabb::universe = aabb(interval::universe, interval::universe, interval::universe);
 
+aabb operator+(const aabb& bbox, const vec3& offset) {
+	return aabb(bbox.interval_x + offset.x(), bbox.interval_y + offset.y(), bbox.interval_z + offset.z());
+}
+
+aabb operator+(const vec3& offset, const aabb& bbox) {
+	return bbox + offset;
+}
+
 #endif
