@@ -141,7 +141,7 @@ void perlin_spheres()
 {
 	hittable_list world;
 
-	auto pertext = make_shared<noise_texture>();
+	auto pertext = make_shared<noise_texture>(4);
 	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
 	world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
 
@@ -243,6 +243,9 @@ void cornell_box() {
 	world.add(make_shared<quad>(point3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
 	world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
 
+	world.add(box(point3(130, 0, 65), point3(295, 165, 230), white));
+	world.add(box(point3(265, 0, 295), point3(430, 330, 460), white));
+
 	camera cam;
 
 	cam.aspect_ratio = 1.0;
@@ -287,7 +290,6 @@ int main()
 		break;
 	case 7:
 		cornell_box();
-
 	}
 
 	end = clock();

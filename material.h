@@ -109,7 +109,7 @@ private:
 	}
 };
 
-// นโิด
+// lights : it just tell the ray what color it is and performs no reflection
 class diffuse_light : public material
 {
 public:

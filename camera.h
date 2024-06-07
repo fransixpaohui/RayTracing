@@ -158,7 +158,7 @@ public:
 		if (depth <= 0)
 			return color(0, 0, 0);
 
-		// ½¨Á¢ hit record
+		// hit record
 		hit_record rec;
 
 		// if the ray hits noting return teh background color

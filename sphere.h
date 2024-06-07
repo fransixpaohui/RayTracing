@@ -75,7 +75,7 @@ public:
 		return true;
 	}
 
-	// 实例化抽象函数
+	// 实例化 virtual 函数
 	aabb bounding_box() const override { return bbox; }
 
 	// (x,y,z) -> (u,v)
