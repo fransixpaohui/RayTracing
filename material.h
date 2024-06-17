@@ -4,6 +4,7 @@
 #include "rtweekend.h"
 #include "hittable_list.h"
 #include "texture.h"
+#include "onb.h"
 
 class material
 {
@@ -11,7 +12,7 @@ public:
 	virtual ~material() = default;
 
 	// 默认材质无法发生scatter
-	virtual bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered) const
+	virtual bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered, double& pdf) const
 	{
 		return false;
 	}
@@ -37,23 +38,21 @@ public:
 	lambertian(shared_ptr<texture> tex) : tex(tex) {}
 
 	// attenuation 表示经过该次scatter后得到的颜色
-	bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered) const override
-	{
-		auto scatter_diretion = rec.normal + random_unit_vec();
+	bool scatter(
+		const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf
+	) const override {
+		onb uvw;
+		uvw.build_from_w(rec.normal);
+		auto scatter_direction = uvw.local(random_cosine_direction());
 
-		if (scatter_diretion.near_zero())
-		{
-			scatter_diretion = rec.normal;
-		}
-
-		scattered = ray(rec.p, scatter_diretion, r_in.time());
+		scattered = ray(rec.p, unit_vector(scatter_direction), r_in.time());
 		attenuation = tex->value(rec.u, rec.v, rec.p);
+		pdf = dot(uvw.w(), scattered.direction()) / pi;
 		return true;
 	}
 
 	double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const {
-		auto cos_theta = dot(rec.normal, unit_vector(scattered.direction()));
-		return cos_theta < 0 ? 0 : cos_theta / pi;
+		return 1 / (2 * pi);
 	}
 
 private:
@@ -66,7 +65,7 @@ class metal : public material
 public:
 	metal(const color &albedo, const double &fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
 
-	bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scatterd) const override
+	bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scatterd, double& pdf) const override
 	{
 		vec3 reflected = reflect(r_in.direction(), rec.normal);
 		reflected = unit_vector(reflected) + fuzz * (random_unit_vec());
@@ -85,7 +84,7 @@ class dielectric : public material
 public:
 	dielectric(double refraction_index) : refraction_index(refraction_index) {}
 
-	bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered) const override
+	bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered, double& pdf) const override
 	{
 		attenuation = color(1.0, 1.0, 1.0);
 		double ri = rec.front_face ? (1.0 / refraction_index) : refraction_index;
@@ -141,11 +140,18 @@ public:
 	isotropic(const color& albedo) : tex(make_shared<solid_color>(albedo)) {}
 	isotropic(shared_ptr<texture> tex) : tex(tex) {}
 
-	bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
-		const override {
-		scattered = ray(rec.p, random_unit_vec(), r_in.time());
+	bool scatter(
+		const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf
+	) const override {
 		attenuation = tex->value(rec.u, rec.v, rec.p);
+		scattered = ray(rec.p, random_unit_vec(), r_in.time());
+		pdf = 1 / (4 * pi);
 		return true;
+	}
+
+	double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered)
+		const override {
+		return 1 / (4 * pi);
 	}
 
 private:
