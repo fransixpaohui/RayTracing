@@ -4,6 +4,7 @@
 #include "rtweekend.h"
 #include "hittable_list.h"
 #include "material.h"
+#include "pdf.h"
 
 #include <fstream>
 #include <omp.h>
@@ -181,31 +182,19 @@ public:
 
 		ray scattered;
 		color attenuation;
-		double pdf;
+		double pdf_val;
 		color color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
 
-		if (!rec.mat->scatter(r, rec, attenuation, scattered, pdf)) return color_from_emission;
+		if (!rec.mat->scatter(r, rec, attenuation, scattered, pdf_val)) return color_from_emission;
 
-		auto on_light = point3(random_double(213, 343), 554, random_double(227, 332));
-		auto to_light = on_light - rec.p;
-		auto distance_squared = to_light.length_squared();
-		to_light = unit_vector(to_light);
-
-		if (dot(to_light, rec.normal) < 0)
-			return color_from_emission;
-
-		double light_area = (343 - 213) * (332 - 227);
-		auto light_cosine = fabs(to_light.y());
-		if (light_cosine < 0.000001)
-			return color_from_emission;
-
-		pdf = distance_squared / (light_cosine * light_area);
-		scattered = ray(rec.p, to_light, r.time());
+		cosine_pdf surface_pdf(rec.normal);
+		scattered = ray(rec.p, surface_pdf.generate(), r.time());
+		pdf_val = surface_pdf.value(scattered.direction());
 
 		double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered);
 
 		color color_from_scatter =
-			(attenuation * scattering_pdf * ray_color(scattered, depth - 1, world)) / pdf;
+			(attenuation * scattering_pdf * ray_color(scattered, depth - 1, world)) / pdf_val;
 
 		return color_from_emission + color_from_scatter;
 	}
