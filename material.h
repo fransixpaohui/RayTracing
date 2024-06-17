@@ -21,6 +21,11 @@ public:
 	{
 		return color(0, 0, 0);
 	}
+
+	virtual double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered)
+		const {
+		return 0;
+	}
 };
 
 // É¢Éäray
@@ -44,6 +49,11 @@ public:
 		scattered = ray(rec.p, scatter_diretion, r_in.time());
 		attenuation = tex->value(rec.u, rec.v, rec.p);
 		return true;
+	}
+
+	double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const {
+		auto cos_theta = dot(rec.normal, unit_vector(scattered.direction()));
+		return cos_theta < 0 ? 0 : cos_theta / pi;
 	}
 
 private:
