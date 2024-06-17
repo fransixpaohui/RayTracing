@@ -17,9 +17,9 @@ public:
 		return false;
 	}
 
-	// 若不是光源，则 color_from_emission 是 color(0,0,0);
-	virtual color emitted(double u, double v, const point3 &p) const
-	{
+	virtual color emitted(
+		const ray& r_in, const hit_record& rec, double u, double v, const point3& p
+	) const {
 		return color(0, 0, 0);
 	}
 
@@ -122,17 +122,19 @@ private:
 class diffuse_light : public material
 {
 public:
-	diffuse_light(shared_ptr<texture> tex) : tex(tex) {}
+	diffuse_light(shared_ptr<texture> tex) : emit(tex) {}
 
-	diffuse_light(const color &emit) : tex(make_shared<solid_color>(emit)) {}
+	diffuse_light(const color &emit) : emit(make_shared<solid_color>(emit)) {}
 
-	color emitted(double u, double v, const point3 &p) const override
-	{
-		return tex->value(u, v, p);
+	color emitted(const ray& r_in, const hit_record& rec, double u, double v, const point3& p)
+		const override {
+		if (!rec.front_face)
+			return color(0, 0, 0);
+		return emit->value(u, v, p);
 	}
 
 private:
-	shared_ptr<texture> tex;
+	shared_ptr<texture> emit;
 };
 
 class isotropic : public material {
