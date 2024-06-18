@@ -84,7 +84,7 @@ void bounsing_shperes()
 	cam.defocus_angle = 0.6;
 	cam.focus_dist = 10.0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
 void checkered_spheres()
@@ -112,7 +112,7 @@ void checkered_spheres()
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
 void earth()
@@ -136,7 +136,7 @@ void earth()
 
 	cam.defocus_angle = 0;
 
-	cam.render(hittable_list(globe));
+	//cam.render(hittable_list(globe));
 }
 
 void perlin_spheres()
@@ -162,7 +162,7 @@ void perlin_spheres()
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
 void quads()
@@ -198,7 +198,7 @@ void quads()
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
 void simple_light() {
@@ -227,7 +227,7 @@ void simple_light() {
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
 void cornell_box() {
@@ -273,7 +273,7 @@ void cornell_box() {
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
 void cornell_smoke() {
@@ -317,7 +317,7 @@ void cornell_smoke() {
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
 void final_scene(int image_width, int samples_per_pixel, int max_depth) {
@@ -396,10 +396,10 @@ void final_scene(int image_width, int samples_per_pixel, int max_depth) {
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	//cam.render(world);
 }
 
-void default() {
+void fun() {
 	hittable_list world;
 
 	auto red = make_shared<lambertian>(color(.65, .05, .05));
@@ -417,23 +417,27 @@ void default() {
 	// Light
 	world.add(make_shared<quad>(point3(213, 554, 227), vec3(130, 0, 0), vec3(0, 0, 105), light));
 
-	// Box 1
+	// Box
 	shared_ptr<hittable> box1 = box(point3(0, 0, 0), point3(165, 330, 165), white);
 	box1 = make_shared<rotate_y>(box1, 15);
 	box1 = make_shared<translate>(box1, vec3(265, 0, 295));
 	world.add(box1);
 
-	// Box 2
-	shared_ptr<hittable> box2 = box(point3(0, 0, 0), point3(165, 165, 165), white);
-	box2 = make_shared<rotate_y>(box2, -18);
-	box2 = make_shared<translate>(box2, vec3(130, 0, 65));
-	world.add(box2);
+	// Glass Sphere
+	auto glass = make_shared<dielectric>(1.5);
+	world.add(make_shared<sphere>(point3(190, 90, 190), 90, glass));
+
+	// Light Sources
+	hittable_list lights;
+	auto m = shared_ptr<material>();
+	lights.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), m));
+	lights.add(make_shared<sphere>(point3(190, 90, 190), 90, m));
 
 	camera cam;
 
 	cam.aspect_ratio = 1.0;
-	cam.image_width = 600;
-	cam.samples_per_pixel = 100;
+	cam.image_width = 100;
+	cam.samples_per_pixel = 10;
 	cam.max_depth = 50;
 	cam.background = color(0, 0, 0);
 
@@ -444,7 +448,7 @@ void default() {
 
 	cam.defocus_angle = 0;
 
-	cam.render(world);
+	cam.render(world,lights);
 }
 
 int main()
@@ -452,7 +456,7 @@ int main()
 	clock_t start, end;
 	start = clock();
 
-	switch (0)
+	switch (11)
 	{
 	case 1:
 		bounsing_shperes();
@@ -483,7 +487,7 @@ int main()
 		break;
 	case 10:
 
-	default: default();
+	case 11: fun();
 		break;
 	}
 

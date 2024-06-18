@@ -2,6 +2,7 @@
 #define SPHERE_H
 
 #include "hittable.h"
+#include "onb.h"
 
 class sphere : public hittable
 {
@@ -17,6 +18,18 @@ private:
 	point3 sphere_center(double time) const
 	{
 		return center1 + time * center_vec;
+	}
+
+	static vec3 random_to_sphere(double radius, double distance_squared) {
+		auto r1 = random_double();
+		auto r2 = random_double();
+		auto z = 1 + r2 * (sqrt(1 - radius * radius / distance_squared) - 1);
+
+		auto phi = 2 * pi * r1;
+		auto x = cos(phi) * sqrt(1 - z * z);
+		auto y = sin(phi) * sqrt(1 - z * z);
+
+		return vec3(x, y, z);
 	}
 
 public:
@@ -86,6 +99,27 @@ public:
 
 		u = phi / (2 * pi);
 		v = theta / pi;
+	}
+
+	double pdf_value(const point3& origin, const vec3& direction) const override {
+		// This method only works for stationary spheres.
+
+		hit_record rec;
+		if (!this->hit(ray(origin, direction), interval(0.001, infinity), rec))
+			return 0;
+
+		auto cos_theta_max = sqrt(1 - radius * radius / (center1 - origin).length_squared());
+		auto solid_angle = 2 * pi * (1 - cos_theta_max);
+
+		return  1 / solid_angle;
+	}
+
+	vec3 random(const point3& origin) const override {
+		vec3 direction = center1 - origin;
+		auto distance_squared = direction.length_squared();
+		onb uvw;
+		uvw.build_from_w(direction);
+		return uvw.local(random_to_sphere(radius, distance_squared));
 	}
 };
 
